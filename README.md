@@ -1,127 +1,122 @@
-# Vamtec
+```markdown
+# vamtec-react
 
-Vamtec is a utility package designed to simplify and automate the process of managing commonly used file generation tasks in Node.js. It helps you quickly set up and generate Excel, CSV, and PDF files from JSON data. It also ensures that necessary dependencies like `xlsx`, `json2csv`, and `pdfkit` are installed automatically if missing.
-
-## Features
-- Automatically installs necessary dependencies (`xlsx`, `json2csv`, `pdfkit`).
-- Provides functions to generate Excel, CSV, and PDF files from JSON data.
-- Supports quick and seamless file generation for web applications or automation tasks.
-- Lightweight and easy to integrate into existing projects.
-- New **Image Upload Module** for handling file uploads in multiple ways (automatic folder creation and filename management).
+`vamtec-react` is a React utility library designed to simplify common frontend tasks, such as file downloading, handling different file formats, and more.
 
 ## Installation
+
+To install the library, you can use either `npm` or `yarn`:
+
+### npm:
 ```bash
-npm install vamtec
+npm install vamtec-react
+```
+
+### yarn:
+```bash
+yarn add vamtec-react
 ```
 
 ## Usage
 
-### Automatically Install Dependencies and Load Modules
+### Downloading Files
 
-```javascript
-const vamtec = require('vamtec'); // Import the vamtec library
-vamtec.main(); // This will check and install required dependencies like xlsx, json2csv, pdfkit
+The library provides a simple utility for triggering file downloads from a given data source.
+
+```js
+import { DownloadFile } from 'vamtec-react';
+
+const handleDownload = (data, fileName, fileExtension) => {
+  DownloadFile(fileName, fileExtension, data);
+};
 ```
 
-This will automatically install the required packages and print:
+### Example: Downloading Leave Requests
 
-```
-xlsx is already installed.
-json2csv is already installed.
-pdfkit is already installed.
-Modules loaded successfully!
-yes...
-```
+Here’s an example using `axios` to download leave requests in different formats such as Excel, CSV, or PDF.
 
-### Using the Functions in Your Express Router
+```js
+import React, { useState } from 'react';
+import axios from 'axios';
+import { DownloadFile } from 'vamtec-react';
 
-Here’s an example of how to use all three functions (Excel, PDF, and CSV) in an Express route:
+const App = () => {
+  const [fileFormat, setFileFormat] = useState("excel"); // Default to 'excel' without the dot
 
-```javascript
-const express = require('express');
-const router = express.Router();
-const vamtec = require('vamtec'); // Import the vamtec library
-const pool = require('../config/db'); // Database connection
-
-// Route to generate reports in different formats
-router.get('/', async (req, res) => {
-  const format = req.query.format || 'excel'; // Default to 'excel' if format is not specified
-  const title = req.query.title || 'Leave Requests'; // Get title from query parameter, default to 'Leave Requests Report'
-  
-  try {
-    // Fetch data from the database
-    const { rows: data } = await pool.query('SELECT * FROM LeaveRequests');
-
-    // Generate the file based on the format specified in the query
-    if (format === 'excel') {
-      vamtec.generateExcel(data, res); // Generate Excel file
-    } else if (format === 'pdf') {
-      vamtec.generatePDF(data, res, title); // Generate PDF file
-    } else if (format === 'csv') {
-      vamtec.generateCSV(data, res); // Generate CSV file
-    } else {
-      res.status(400).send('Invalid format');
+  const handleDownload = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/download-leave-requests?format=${fileFormat}`, { responseType: 'blob' });
+      // Map 'excel', 'csv', 'pdf' to their respective extensions
+      const fileExtension = fileFormat === "excel" ? ".xlsx" : fileFormat === "csv" ? ".csv" : ".pdf";
+      // Call the fileHandling function with correct file name and extension
+      DownloadFile('Download', fileExtension, response.data); // Pass base filename, extension, and data
+    } catch (error) {
+      console.error('Error downloading file', error);
     }
-  } catch (err) {
-    console.error('Error:', err);
-    res.status(500).send('Internal Server Error');
-  }
-});
+  };
 
-module.exports = router;
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Download Leave Requests</h1>
+      <select value={fileFormat} onChange={(e) => setFileFormat(e.target.value)} className="p-2 border rounded-md w-full mb-4">
+        <option value="excel">Excel (.xlsx)</option>
+        <option value="csv">CSV (.csv)</option>
+        <option value="pdf">PDF (.pdf)</option>
+      </select>
+      <button onClick={handleDownload} className="bg-blue-500 text-white p-2 rounded mt-4">
+        Download Leave Requests
+      </button>
+    </div>
+  );
+};
+
+export default App;
 ```
 
-### Available Functions
-- **`generateExcel(data, res)`**: Generates and sends an Excel file (XLSX format) from the provided data.
-- **`generateCSV(data, res)`**: Generates and sends a CSV file from the provided data.
-- **`generatePDF(data, res, title)`**: Generates and sends a PDF file from the provided data with an optional title.
+### API
 
----
+#### `DownloadFile(baseFilename, fileExtension, data)`
 
-## New Image Upload Module
+- **baseFilename** (`string`): The base name of the file (without the extension).
+- **fileExtension** (`string`): The file extension (e.g., `.xlsx`, `.csv`, `.pdf`).
+- **data** (`Blob`): The data to be downloaded.
 
-Vamtec now includes an image upload module for managing file uploads. This module allows flexible folder management and filename control for your file uploads.
+This function creates a temporary anchor (`<a>`) element, sets the `download` attribute with the provided `baseFilename` and `fileExtension`, and triggers a download of the file using the data provided.
 
-### Installation
-```bash
-npm install vamtec
+#### Example:
+
+If you're downloading leave request data as an Excel file, the function will use the filename `'Download'`, append the `.xlsx` extension, and download the file using the Blob data.
+
+```js
+DownloadFile('Download', '.xlsx', response.data);
 ```
 
-### Image Upload Setup
+## Contributing
 
-Here’s an example of how to use the image upload setup in your Express application:
+We welcome contributions to improve this library! If you'd like to contribute, please:
 
-```javascript
-const express = require("express");
-const { img } = require("vamtec"); // Import the image upload setup
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature-branch`).
+3. Commit your changes (`git commit -am 'Add new feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Open a Pull Request.
 
-const app = express();
+## License
 
-// Case 1: Upload with custom folder and filename configuration
-app.post("/upload", img({ folder: "uploads1", filename: "timestamp" }).single("image"), async (req, res) => {
-  if (!req.file) return res.status(400).send("No file uploaded");
-  res.json({ message: "File uploaded successfully", fileName: req.file.filename });
-});
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-// Case 2: Upload with folder and filename array configuration
-app.post("/upload", img(["uploads2", "original"]).single("image"), async (req, res) => {
-  if (!req.file) return res.status(400).send("No file uploaded");
-  res.json({ message: "File uploaded successfully", fileName: req.file.filename });
-});
+## Author
 
-// Case 3: Upload with folder, filename, and field name configuration
-app.post("/upload", img(["uploads3", "original", "image"]).single("image"), async (req, res) => {
-  if (!req.file) return res.status(400).send("No file uploaded");
-  res.json({ message: "File uploaded successfully", fileName: req.file.filename });
-});
-
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+This library is maintained by **Sivasaran S**.
 ```
 
-### How it Works:
-- **Case 1**: Uploads a file with a custom folder and filename format (`timestamp` for a timestamp-based filename).
-- **Case 2**: Uploads a file with the original filename in the specified folder.
-- **Case 3**: Uploads a file with a custom folder, filename, and field name (useful when you have multiple fields in your form).
+### Key Sections in `README.md`:
+1. **Installation**: Instructions for installing the library with `npm` or `yarn`.
+2. **Usage**: Basic usage showing how to import and use the `DownloadFile` utility function.
+3. **Example**: A full example using `axios` to download leave requests as different file formats (Excel, CSV, PDF).
+4. **API Documentation**: A brief explanation of how the `DownloadFile` function works.
+5. **Contributing**: Instructions on how to contribute to the project.
+6. **License**: MIT License information.
+7. **Author**: Maintainer's details (you).
 
-This module supports automatic creation of the upload folder if it doesn't exist.
-
+This `README.md` provides clear usage instructions for developers integrating the `vamtec-react` library into their React projects. Let me know if you need any more details or adjustments!

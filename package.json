@@ -1,6 +1,6 @@
 {
   "name": "vamtec-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vamtec is a file generation (PDF, Excel, CSV), image uploads handling and automation library",
   "main": "index.js",
   "scripts": {
