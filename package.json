@@ -1,0 +1,28 @@
+{
+  "name": "vamtec-react",
+  "version": "1.0.0",
+  "description": "Vamtec is a file generation (PDF, Excel, CSV), image uploads handling and automation library for frontend",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "test": "react-scripts test",
+    "build": "react-scripts build"
+  },
+  "keywords": [
+    "file-upload", 
+    "image-upload", 
+    "file-management", 
+    "vamtec",
+    "frontend"
+  ],
+  "author": "Sivasaran S",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.65.0"
+  }
+}
